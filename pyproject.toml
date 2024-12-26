@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "customer-satisfaction"
+version = "0.1.0"
+description = "Airline customer satisfaction via machine learning algorithms."
+authors = ["Berkay Dinç <berkayydinc@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+notebook = "^7.3.2"
+kagglehub = "^0.3.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
