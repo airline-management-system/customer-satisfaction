@@ -1,10 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #0056b3;
+        }
+
+        #get-results-btn {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 30px auto;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #get-results-btn:hover {
+            background-color: #218838;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        img {
+            width: 350px;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <h1>Survey Results</h1>
+
+    <button id="get-results-btn">Get Results</button>
+
+    <div id="results" class="result-container">
+        <!-- Numeric results and images will be displayed here -->
+    </div>
+
+    <script>
+        // JavaScript to handle button click and display the results
+        document.getElementById('get-results-btn').addEventListener('click', function() {
+            fetch('/get-results')
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+
+                    if (data.results) {
+                        // Display the numeric results
+                        const results = data.results;
+                        for (const [key, value] of Object.entries(results)) {
+                            const resultDiv = document.createElement('div');
+                            resultDiv.classList.add('result');
+                            resultDiv.innerHTML = `<strong>${key.replace(/_/g, ' ')}:</strong> ${value}`;
+                            resultsDiv.appendChild(resultDiv);
+                        }
+
+                        // Display the images
+                        const images = data.images;
+                        for (const [key, imagePath] of Object.entries(images)) {
+                            const imgTag = document.createElement('img');
+                            imgTag.src = imagePath;
+                            imgTag.alt = key;
+                            resultsDiv.appendChild(imgTag);
+                        }
+                    } else {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.classList.add('error-message');
+                        errorMessage.innerHTML = "Error fetching results. Please try again.";
+                        resultsDiv.appendChild(errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching results:', error);
+                    const errorMessage = document.createElement('div');
+                    errorMessage.classList.add('error-message');
+                    errorMessage.innerHTML = "An error occurred while fetching results.";
+                    document.getElementById('results').appendChild(errorMessage);
+                });
+        });
+    </script>
 </body>
 </html>

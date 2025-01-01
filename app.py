@@ -5,11 +5,11 @@ from flask import Flask, request, jsonify, render_template_string
 import random
 
 
-CSV_FILE = "train.csv"
+CSV_FILE = "../train.csv"
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/survey')
 def survey():
     return render_template_string(open("survey.html").read())
 
@@ -72,6 +72,46 @@ def submit_survey():
         return jsonify({"message": "Survey submitted and saved successfully!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/results')
+def results():
+    return render_template_string(open("results.html").read())
+@app.route('/get-results', methods=['GET'])
+def get_results():
+
+    #model()
+
+    # Sample numeric results and image paths for the demo (you can replace with actual logic)
+    results = {
+        "average_age": 35,
+        "average_flight_distance": 1500,
+        "avg_wifi_rating": 4.2,
+        "avg_seat_comfort": 4.7,
+        "avg_food_drink": 4.3
+    }
+
+    # Sample image paths
+    images = {
+        "test1": "static/images/output.png",
+        "test2": "static/images/output.png",
+        "test3": "static/images/output.png",
+        "test4": "static/images/output.png",
+        "test5": "static/images/output.png",
+        "test6": "static/images/output.png",
+        "test7": "static/images/output.png",
+        "test8": "static/images/output.png",
+
+
+    }
+
+    # Return the data in JSON format to be handled by JavaScript
+    return jsonify({"results": results, "images": images})
+
+
+def model():
+    # ML CODE WILL BE HERE
+    pass
 
 
 if __name__ == '__main__':
