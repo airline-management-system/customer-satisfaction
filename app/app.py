@@ -269,7 +269,7 @@ def model():
 
 def ipa_classify(row):
   global importance_mean
-  global importance_mean
+  global performance_mean
 
   if row['Importance'] > importance_mean and row['Performance'] < performance_mean:
       return "Concentrate Here"
