@@ -17,6 +17,6 @@ poetry install
 poetry run jupyter notebook
 
 #Run survey app
-portry run flask --app app --debug 
+poetry run flask --app app --debug 
 
 ```
