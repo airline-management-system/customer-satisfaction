@@ -14,6 +14,9 @@ pipx install poetry
 poetry install
 
 # Run any notebook you want
-poetry run jupyter notebook 
+poetry run jupyter notebook
+
+#Run survey app
+portry run flask --app app --debug 
 
 ```
