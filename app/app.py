@@ -1,13 +1,36 @@
 import csv
 import os
-
+import numpy as np
+import json
+import joblib
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 from flask import Flask, request, jsonify, render_template_string
 import random
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, cohen_kappa_score, confusion_matrix, roc_curve 
 
 
-CSV_FILE = "../train.csv"
+CSV_FILE = "test.csv"
+
+accuracy = 1 
+precision = 1
+recall = 1
+f1 = 1
+auc = 1 
+kappa = 1
+
+test_dataset = pd.read_csv(CSV_FILE)
+
+rf = RandomForestClassifier()
+rf = joblib.load('../notebook/rf.joblib')
+le = LabelEncoder()
+le = joblib.load('../notebook/le.joblib')
+sc = StandardScaler()
+sc = joblib.load('../notebook/scaler.joblib')
 
 app = Flask(__name__)
+
 
 @app.route('/survey')
 def survey():
@@ -39,6 +62,7 @@ def submit_survey():
 
     # Prepare row data for the CSV
     row = [
+        0,
         data.get("id"),
         data.get("gender"),
         data["customer_type"],
@@ -61,8 +85,11 @@ def submit_survey():
         data.get("inflight"),
         data.get("Cleanliness"),
         data["departure_delay"],
-        data["arrival_delay"]
+        data["arrival_delay"],
+        ''
     ]
+    
+    row[-1] = "neutral or dissatisfied" if sum(map(int, row[8:-3])) < 60 else "satisfied"
 
     # Append the data to the CSV
     try:
@@ -80,36 +107,74 @@ def results():
 @app.route('/get-results', methods=['GET'])
 def get_results():
 
-    #model()
+    model()
 
     # Sample numeric results and image paths for the demo (you can replace with actual logic)
     results = {
-        "average_age": 35,
-        "average_flight_distance": 1500,
-        "avg_wifi_rating": 4.2,
-        "avg_seat_comfort": 4.7,
-        "avg_food_drink": 4.3
+      "accuracy": accuracy,
+      "precision": precision,
+      "recall": recall,
+      "f1": f1,
+      "auc": auc,
+      "kappa": kappa
     }
 
     # Sample image paths
     images = {
-        "test1": "static/images/output.png",
-        "test2": "static/images/output.png",
-        "test3": "static/images/output.png",
-        "test4": "static/images/output.png",
-        "test5": "static/images/output.png",
-        "test6": "static/images/output.png",
-        "test7": "static/images/output.png",
-        "test8": "static/images/output.png",
-
-
+        "test1": "static/images/confmatrix.png",
+        "test2": "static/images/roccurve.png"
     }
 
     # Return the data in JSON format to be handled by JavaScript
     return jsonify({"results": results, "images": images})
 
 
+@app.route('/model')
 def model():
-    # ML CODE WILL BE HERE
-    pass
+  test = test_dataset.copy()
+  test = test.drop(columns=['Unnamed: 0', 'id'])
+  test['satisfaction'] = le.transform(test['satisfaction'])
+  categorical = test.select_dtypes(include=['object']).columns
+  test = pd.get_dummies(test, columns=categorical, drop_first=True)
+  test.dropna(axis=0,inplace=True)
+  numeric_columns = test.select_dtypes(include=['float64', 'int64']).columns.to_list()
+  numeric_columns.remove('satisfaction')
+  test[numeric_columns] = sc.transform(test[numeric_columns])
+  y_test = test["satisfaction"]
+  test = test.drop(columns=['satisfaction'])
+  y_pred = rf.predict(test)
+  y_proba = rf.predict_proba(test)[:, 1]
+  accuracy = accuracy_score(y_test, y_pred)
+  precision = precision_score(y_test, y_pred)
+  recall = recall_score(y_test, y_pred)
+  f1 = f1_score(y_test, y_pred)
+  auc = roc_auc_score(y_test, y_proba)
+  kappa = cohen_kappa_score(y_test, y_pred)
+  
+  # Plot confusion matrix
+  conf_matrix = confusion_matrix(y_test, y_pred)
 
+  # from matplotlib import pyplot as plt
+  # import seaborn as sns
+
+  # plt.ioff()
+
+  # plt.figure(figsize=(6, 6))
+  # sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=['Neutral/Dissatisfied', 'Satisfied'], yticklabels=['Neutral/Dissatisfied', 'Satisfied'])
+  # plt.title('Confusion Matrix', fontsize=16)
+  # plt.xlabel('Predicted', fontsize=14)
+  # plt.ylabel('Actual', fontsize=14)
+  # plt.savefig("static/images/confmatrix.png")
+
+  # # Draw ROC curve
+  # fpr, tpr, _ = roc_curve(y_pred, y_proba)
+  # plt.figure(figsize=(8, 6))
+  # plt.plot(fpr, tpr, label=f"AUC = {auc:.2f}", color="darkorange")
+  # plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
+  # plt.title('ROC Curve', fontsize=16)
+  # plt.xlabel('False Positive Rate', fontsize=14)
+  # plt.ylabel('True Positive Rate', fontsize=14)
+  # plt.legend(loc="lower right")
+  # plt.savefig("static/images/roccurve.png")
+
+  
