@@ -10,6 +10,12 @@ import random
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, cohen_kappa_score, confusion_matrix, roc_curve 
 
+# Rander the plots without GUI
+import matplotlib
+matplotlib.use('Agg')
+
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 CSV_FILE = "test.csv"
 
@@ -19,6 +25,10 @@ recall = 1
 f1 = 1
 auc = 1 
 kappa = 1
+
+df_company = pd.DataFrame()
+importance_mean = 0
+performance_mean = 0
 
 test_dataset = pd.read_csv(CSV_FILE)
 
@@ -109,6 +119,16 @@ def get_results():
 
     model()
 
+    global df_company
+    global accuracy
+    global precision
+    global recall
+    global f1
+    global auc 
+    global kappa
+    global importance_mean 
+    global performance_mean
+
     # Sample numeric results and image paths for the demo (you can replace with actual logic)
     results = {
       "accuracy": accuracy,
@@ -116,21 +136,38 @@ def get_results():
       "recall": recall,
       "f1": f1,
       "auc": auc,
-      "kappa": kappa
+      "kappa": kappa,
     }
 
     # Sample image paths
     images = {
         "test1": "static/images/confmatrix.png",
-        "test2": "static/images/roccurve.png"
+        "test2": "static/images/roccurve.png",
+        "ipa":"static/images/ipa.png",
+    }
+
+    ipa = df_company.to_json(orient="records")
+
+    means = {
+        "importance_mean": importance_mean,
+        "performance_mean": performance_mean,
     }
 
     # Return the data in JSON format to be handled by JavaScript
-    return jsonify({"results": results, "images": images})
+    return jsonify({"results": results, "ipa": ipa, "means": means, "images": images})
 
 
 @app.route('/model')
 def model():
+  
+  global accuracy
+  global precision
+  global recall
+  global f1
+  global auc 
+  global kappa
+  
+
   test = test_dataset.copy()
   test = test.drop(columns=['Unnamed: 0', 'id'])
   test['satisfaction'] = le.transform(test['satisfaction'])
@@ -154,27 +191,91 @@ def model():
   # Plot confusion matrix
   conf_matrix = confusion_matrix(y_test, y_pred)
 
-  # from matplotlib import pyplot as plt
-  # import seaborn as sns
+  plt.ioff()
 
-  # plt.ioff()
-
-  # plt.figure(figsize=(6, 6))
-  # sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=['Neutral/Dissatisfied', 'Satisfied'], yticklabels=['Neutral/Dissatisfied', 'Satisfied'])
-  # plt.title('Confusion Matrix', fontsize=16)
-  # plt.xlabel('Predicted', fontsize=14)
-  # plt.ylabel('Actual', fontsize=14)
-  # plt.savefig("static/images/confmatrix.png")
+  plt.figure(figsize=(6, 6))
+  sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=['Neutral/Dissatisfied', 'Satisfied'], yticklabels=['Neutral/Dissatisfied', 'Satisfied'])
+  plt.title('Confusion Matrix', fontsize=16)
+  plt.xlabel('Predicted', fontsize=14)
+  plt.ylabel('Actual', fontsize=14)
+  plt.savefig("static/images/confmatrix.png")
 
   # # Draw ROC curve
-  # fpr, tpr, _ = roc_curve(y_pred, y_proba)
-  # plt.figure(figsize=(8, 6))
-  # plt.plot(fpr, tpr, label=f"AUC = {auc:.2f}", color="darkorange")
-  # plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
-  # plt.title('ROC Curve', fontsize=16)
-  # plt.xlabel('False Positive Rate', fontsize=14)
-  # plt.ylabel('True Positive Rate', fontsize=14)
-  # plt.legend(loc="lower right")
-  # plt.savefig("static/images/roccurve.png")
+  fpr, tpr, _ = roc_curve(y_pred, y_proba)
+  plt.figure(figsize=(8, 6))
+  plt.plot(fpr, tpr, label=f"AUC = {auc:.2f}", color="darkorange")
+  plt.plot([0, 1], [0, 1], linestyle="--", color="gray")
+  plt.title('ROC Curve', fontsize=16)
+  plt.xlabel('False Positive Rate', fontsize=14)
+  plt.ylabel('True Positive Rate', fontsize=14)
+  plt.legend(loc="lower right")
+  plt.savefig("static/images/roccurve.png")
 
-  
+
+
+  # IPA Analysis
+
+  # Extract the related columns for IPA analysis
+  columns_of_interest = test_dataset.iloc[:, 8:-3]
+  # Get insterested column names
+  attributes = columns_of_interest.columns.tolist()
+  # Calculate the mean for each of the columns
+  means = columns_of_interest.mean().round(2)
+
+  # Open and read the JSON file
+  with open('../config/ipa.json', 'r') as file:
+    data = json.load(file)
+    importance_list = data["company_2"]
+
+  # Set the data_set for IPA analysis
+  data_set = {
+    "Attribute":attributes,
+    "Importance": importance_list,
+    "Performance": means.tolist(),
+  }
+
+  global df_company
+  # Create data frame object
+  df_company = pd.DataFrame(data_set)
+
+  global importance_mean
+  global performance_mean
+  # Calculate mean importance and performance
+  importance_mean = df_company['Importance'].mean().round(2)
+  performance_mean = df_company['Performance'].mean().round(2)
+
+  # Scatter plot of Importance vs. Performance
+  plt.figure(figsize=(8,8))
+  plt.scatter(df_company['Performance'], df_company['Importance'], c='blue', s=100)
+    
+  # Add text labels for each attribute
+  for i, row in df_company.iterrows():
+    plt.text(row['Performance'] + 0.1, row['Importance'] + 0.1, row['Attribute'], fontsize=10)
+    
+  # Add gridlines based on mean values
+  plt.axhline(y=importance_mean, color='red', linestyle='--', label="Mean Importance")
+  plt.axvline(x=performance_mean, color='red', linestyle='--', label="Mean Performance")
+    
+  # Add labels and title
+  plt.xlabel("Performance")
+  plt.ylabel("Importance")
+  plt.title("Importance-Performance Analysis (IPA)")
+  plt.legend()
+  plt.grid()
+  plt.savefig("static/images/ipa.png")
+
+  df_company['Quadrant'] = df_company.apply(ipa_classify, axis=1)
+
+
+def ipa_classify(row):
+  global importance_mean
+  global importance_mean
+
+  if row['Importance'] > importance_mean and row['Performance'] < performance_mean:
+      return "Concentrate Here"
+  elif row['Importance'] > importance_mean and row['Performance'] > performance_mean:
+      return "Good Work"
+  elif row['Importance'] < importance_mean and row['Performance'] < performance_mean:
+      return "Low Priority"
+  else:
+      return "Possible Overkill"
