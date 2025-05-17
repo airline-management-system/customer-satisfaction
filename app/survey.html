@@ -1,115 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Survey</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <style>
+    /* Universal box-sizing */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f9;
+      background-color: #f4f7f6; /* Light grey background, same as results */
+      color: #1a237e; /* Default text color, same as results */
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
+    .ams-appbar { /* Same as results page */
+      width: 100%;
+      background: #1565c0; /* AMS blue */
+      color: white;
+      padding: 18px 0 16px 0;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 1px;
       text-align: center;
-      color: #333;
+      box-shadow: 0 2px 8px rgba(21,101,192,0.08);
+      margin-bottom: 32px;
+    }
+
+    .ams-container { /* Same as results page */
+      max-width: 650px; /* Slightly wider for form elements */
+      margin: 0 auto 32px auto; /* Centered with bottom margin */
+      background: #fff;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(21,101,192,0.08);
+    }
+
+    .ams-title { /* Same as results page */
+      text-align: center;
+      color: #1565c0; /* AMS blue */
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
     }
 
     label {
       display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      color: #555;
+      margin-bottom: 8px; /* Space below label text */
+      font-weight: 500; /* Medium weight for labels */
+      color: #333; /* Darker grey for label text */
+      font-size: 0.95rem;
     }
 
-    input,
+    input[type="text"],
+    input[type="number"],
     select {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
+      padding: 12px 15px; /* More padding */
+      margin-bottom: 15px; /* Space below input field */
+      border: 1px solid #ced4da; /* Lighter border */
+      border-radius: 8px; /* More rounded corners */
+      font-size: 1rem;
+      color: #495057;
+      background-color: #f8f9fa; /* Very light grey background for inputs */
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      border-color: #1565c0; /* AMS blue on focus */
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(21, 101, 192, 0.25); /* AMS blue shadow */
+    }
+
+    .radio-group-title { /* For the label of the radio group itself */
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 500;
+        color: #333;
+        font-size: 0.95rem;
     }
 
     .radio-group {
       display: flex;
-      justify-content: space-between;
-    }
-
-    .radio-group label {
-      font-weight: normal;
-    }
-
-    button {
-      display: block;
-      width: 100%;
+      justify-content: space-around; /* Evenly space radio buttons */
+      align-items: center;
+      background-color: #f8f9fa;
       padding: 10px;
-      border: none;
-      background: #007BFF;
-      color: white;
-      font-size: 16px;
-      border-radius: 5px;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      margin-bottom: 15px;
+    }
+
+    .radio-group label { /* Label for each radio button */
+      font-weight: normal;
+      color: #495057;
+      display: flex; /* Align radio and text */
+      align-items: center;
+      margin-bottom: 0; /* Remove bottom margin from individual radio labels */
       cursor: pointer;
     }
 
-    button:hover {
-      background: #0056b3;
+    .radio-group input[type="radio"] {
+      margin-right: 8px;
+      width: auto; /* Override full width for radio */
+      accent-color: #1565c0; /* AMS blue for radio check */
     }
+    
+    .form-actions {
+        margin-top: 30px;
+        margin-bottom: 20px; /* Add margin below button before message box */
+    }
+
+    button[type="submit"] {
+      display: block;
+      width: 100%;
+      padding: 14px 0;
+      border: none;
+      background: #1565c0; /* AMS blue */
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    button[type="submit"]:hover {
+      background: #0d47a1; /* Darker AMS blue on hover */
+    }
+
+    /* Message Box Styles */
+    .message-box {
+        padding: 15px 20px;
+        /* margin: 20px 0; Removed top margin as it's below button now */
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-align: center;
+        display: none; /* Hidden by default */
+        border: 1px solid transparent;
+        width: 100%; /* Make message box take full width of its container */
+    }
+    .message-box.success {
+        background-color: #d4edda; /* Light green */
+        color: #155724; /* Dark green text */
+        border-color: #c3e6cb;
+    }
+    .message-box.error {
+        background-color: #f8d7da; /* Light red */
+        color: #721c24; /* Dark red text */
+        border-color: #f5c6cb;
+    }
+
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .ams-container {
+        margin: 20px 15px;
+        padding: 20px;
+      }
+      .ams-appbar {
+        font-size: 1.5rem;
+        padding: 15px 0;
+      }
+      .ams-title {
+        font-size: 1.5rem;
+      }
+      .radio-group {
+        flex-direction: column; /* Stack radio buttons on small screens */
+        align-items: flex-start;
+      }
+      .radio-group label {
+        margin-bottom: 8px; /* Add some space when stacked */
+        width: 100%; /* Make labels take full width when stacked */
+      }
+    }
+
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Customer Survey</h1>
+  <div class="ams-appbar">AMS Customer Survey</div>
+  <div class="ams-container">
+    <div class="ams-title">Share Your Feedback</div>
+    
     <form id="surveyForm" action="/submit-survey" method="POST">
-      <!-- ID Field -->
-      <label for="id">ID (max 11 digits):</label>
-      <input type="text" id="id" name="id" maxlength="11" required>
+      
+      <div class="form-section">
+        <label for="id">ID (exactly 11 digits):</label>
+        <input type="text" id="id" name="id" maxlength="11" pattern="\d{11}" title="Please enter exactly 11 digits." required>
+      </div>
 
-      <!-- Gender Field -->
-      <label for="gender">Gender:</label>
-      <select id="gender" name="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Female">Female</option>
-        <option value="Male">Male</option>
-      </select>
+      <div class="form-section">
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+          <option value="" disabled selected>Select Gender</option>
+          <option value="Female">Female</option>
+          <option value="Male">Male</option>
+        </select>
+      </div>
 
-      <!-- Age Field -->
-      <label for="age">Age:</label>
-      <input type="number" id="age" name="age" required>
+      <div class="form-section">
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" min="1" max="120" required>
+      </div>
 
-      <!-- Type of Travel Field -->
-      <label for="travelType">Type of Travel:</label>
-      <select id="travelType" name="travelType" required>
-        <option value="">Select Type of Travel</option>
-        <option value="Business travel">Business travel</option>
-        <option value="Personal Travel">Personal Travel</option>
-      </select>
+      <div class="form-section">
+        <label for="travelType">Type of Travel:</label>
+        <select id="travelType" name="travelType" required>
+          <option value="" disabled selected>Select Type of Travel</option>
+          <option value="Business travel">Business travel</option>
+          <option value="Personal Travel">Personal Travel</option>
+        </select>
+      </div>
 
-      <!-- Class Field -->
-      <label for="class">Class:</label>
-      <select id="class" name="class" required>
-        <option value="">Select Class</option>
-        <option value="Eco">Eco</option>
-        <option value="Eco Plus">Eco Plus</option>
-        <option value="Business">Business</option>
-      </select>
+      <div class="form-section">
+        <label for="class">Class:</label>
+        <select id="class" name="class" required>
+          <option value="" disabled selected>Select Class</option>
+          <option value="Eco">Eco</option>
+          <option value="Eco Plus">Eco Plus</option>
+          <option value="Business">Business</option>
+        </select>
+      </div>
 
-      <!-- Multiple Rating Fields -->
-      <div>
-        <label>Inflight Wi-fi Service:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Inflight Wi-fi Service:</span>
         <div class="radio-group">
           <label><input type="radio" name="wifi" value="1" required> 1</label>
           <label><input type="radio" name="wifi" value="2"> 2</label>
@@ -119,8 +251,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Departure/Arrival time convenient:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Departure/Arrival time convenient:</span>
         <div class="radio-group">
           <label><input type="radio" name="timeConvenient" value="1" required> 1</label>
           <label><input type="radio" name="timeConvenient" value="2"> 2</label>
@@ -130,8 +262,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Ease of Online Booking:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Ease of Online Booking:</span>
         <div class="radio-group">
           <label><input type="radio" name="booking" value="1" required> 1</label>
           <label><input type="radio" name="booking" value="2"> 2</label>
@@ -141,8 +273,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Gate Location:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Gate Location:</span>
         <div class="radio-group">
           <label><input type="radio" name="gateLocation" value="1" required> 1</label>
           <label><input type="radio" name="gateLocation" value="2"> 2</label>
@@ -152,8 +284,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Food and Drink:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Food and Drink:</span>
         <div class="radio-group">
           <label><input type="radio" name="foodDrink" value="1" required> 1</label>
           <label><input type="radio" name="foodDrink" value="2"> 2</label>
@@ -163,8 +295,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Online Boarding:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Online Boarding:</span>
         <div class="radio-group">
           <label><input type="radio" name="onlineBoarding" value="1" required> 1</label>
           <label><input type="radio" name="onlineBoarding" value="2"> 2</label>
@@ -174,8 +306,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Seat Comfort:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Seat Comfort:</span>
         <div class="radio-group">
           <label><input type="radio" name="seatComfort" value="1" required> 1</label>
           <label><input type="radio" name="seatComfort" value="2"> 2</label>
@@ -185,8 +317,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Inflight entertainment:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Inflight entertainment:</span>
         <div class="radio-group">
           <label><input type="radio" name="entertainment" value="1" required> 1</label>
           <label><input type="radio" name="entertainment" value="2"> 2</label>
@@ -196,8 +328,8 @@
         </div>
       </div>
 
-      <div>
-        <label>On-board service:</label>
+      <div class="form-section">
+        <span class="radio-group-title">On-board service:</span>
         <div class="radio-group">
           <label><input type="radio" name="onboard" value="1" required> 1</label>
           <label><input type="radio" name="onboard" value="2"> 2</label>
@@ -207,10 +339,10 @@
         </div>
       </div>
 
-      <div>
-        <label>Leg room service:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Leg room service:</span>
         <div class="radio-group">
-          <label><input type="radio" value="1" required> 1</label>
+          <label><input type="radio" name="legroom" value="1" required> 1</label>
           <label><input type="radio" name="legroom" value="2"> 2</label>
           <label><input type="radio" name="legroom" value="3"> 3</label>
           <label><input type="radio" name="legroom" value="4"> 4</label>
@@ -218,8 +350,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Baggage handling:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Baggage handling:</span>
         <div class="radio-group">
           <label><input type="radio" name="baggage" value="1" required> 1</label>
           <label><input type="radio" name="baggage" value="2"> 2</label>
@@ -229,8 +361,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Checkin service:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Checkin service:</span>
         <div class="radio-group">
           <label><input type="radio" name="checkin" value="1" required> 1</label>
           <label><input type="radio" name="checkin" value="2"> 2</label>
@@ -240,8 +372,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Inflight service:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Inflight service:</span>
         <div class="radio-group">
           <label><input type="radio" name="inflight" value="1" required> 1</label>
           <label><input type="radio" name="inflight" value="2"> 2</label>
@@ -251,8 +383,8 @@
         </div>
       </div>
 
-      <div>
-        <label>Cleanliness:</label>
+      <div class="form-section">
+        <span class="radio-group-title">Cleanliness:</span>
         <div class="radio-group">
           <label><input type="radio" name="Cleanliness" value="1" required> 1</label>
           <label><input type="radio" name="Cleanliness" value="2"> 2</label>
@@ -262,13 +394,88 @@
         </div>
       </div>
 
-
-
-      <button type="submit">Submit</button>
-
+      <div class="form-actions">
+        <button type="submit">Submit Feedback</button>
+      </div>
+      
+      <div id="form-feedback-message" class="message-box"></div>
     </form>
-
   </div>
-</body>
+  <script>
+    const surveyForm = document.getElementById('surveyForm');
+    const feedbackMessageBox = document.getElementById('form-feedback-message'); // This targets the div now at the bottom
 
+    surveyForm.addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent default form submission
+
+      // Client-side validation for radio groups
+      const radioGroups = document.querySelectorAll('.radio-group');
+      let allRadiosValid = true;
+      radioGroups.forEach(group => {
+        const groupName = group.querySelector('input[type="radio"]').name;
+        if (!surveyForm.elements[groupName].value) {
+          allRadiosValid = false;
+        }
+      });
+
+      if (!allRadiosValid) {
+        showMessage('Please ensure all rating questions are answered.', 'error');
+        return; 
+      }
+      
+      const submitButton = surveyForm.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+
+      const formData = new FormData(surveyForm);
+      let responseOk = false; // Variable to track response status for the finally block
+      
+      try {
+        const response = await fetch('/submit-survey', {
+          method: 'POST',
+          body: formData
+        });
+
+        responseOk = response.ok; // Store response status
+        const result = await response.json(); 
+
+        if (responseOk && result.message) {
+          showMessage(result.message, 'success');
+          surveyForm.reset(); 
+          setTimeout(() => {
+            window.location.href = 'http://localhost:3000/'; 
+          }, 2500); 
+        } else if (result.error) {
+          showMessage(`Error: ${result.error}`, 'error');
+        } else {
+          showMessage('An unexpected error occurred. Please try again.', 'error');
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        showMessage('Failed to submit the survey. Please check your connection and try again.', 'error');
+      } finally {
+        if (!responseOk) { // Only re-enable if there was an error and no successful redirect is planned
+            submitButton.disabled = false;
+            submitButton.textContent = 'Submit Feedback';
+        }
+      }
+    });
+
+    function showMessage(message, type) {
+        feedbackMessageBox.textContent = message;
+        feedbackMessageBox.className = 'message-box'; 
+        feedbackMessageBox.classList.add(type); 
+        feedbackMessageBox.style.display = 'block';
+
+        if (type === 'error') {
+            setTimeout(() => {
+                if (feedbackMessageBox.style.display === 'block') { // Check if still visible
+                    feedbackMessageBox.style.display = 'none';
+                }
+            }, 5000); 
+        }
+        // For success, it will stay visible until redirect
+    }
+  </script>
+</body>
 </html>
