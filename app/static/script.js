@@ -524,6 +524,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
       })
       .then(data => {
+        // Store the fetched data in a variable
+        const fetchedData = data;
+
+        prompt_payload = {
+            "prompt": {
+              "ipa": fetchedData.ipa,
+              "results": fetchedData.results,
+              "means": fetchedData.means
+            }
+        }
+
+        // Log the fetched data to the console
+        console.log(JSON.stringify(prompt_payload));
+
         resultsDiv.innerHTML = ''; // Clear loading message
         
         // Create dedicated containers for each section
@@ -542,7 +556,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const aiCrmReportContainer = document.createElement('div'); 
         // aiCrmReportContainer will be appended by its render function if needed
         // resultsDiv.appendChild(aiCrmReportContainer); // No, let renderAiCrmReportSection append it
-
 
         const parsedIpaData = renderIpaTable(data.ipa, ipaTableContainer);
 
