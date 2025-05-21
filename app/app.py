@@ -72,7 +72,7 @@ def submit_survey():
     data = request.form.to_dict()
 
     # Add generated fields for customer type, flight distance, and delays
-    data["customer_type"] = random.choice(["Loyal Customer", "Disloyal Customer"])
+    data["customer_type"] = random.choice(["Loyal Customer", "disloyal Customer"])
     data["flight_distance"] = random.randint(500, 2500)
     data["departure_delay"] = random.randint(0, 60)
     data["arrival_delay"] = random.randint(0, 60)
